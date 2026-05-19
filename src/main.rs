@@ -33,6 +33,7 @@ struct Compiler {
     parser: parser::Parser,
     analyzer: analyzer::Analyzer,
     codegen: codegen::CodeGenerator,
+    optimizer: optimizer::Optimizer,
 
     include_paths: Vec<String>,
     source_code: String,
@@ -40,6 +41,7 @@ struct Compiler {
     tokens: Vec<lexer::Token>,
     program: parser::Program,
     assembly: String,
+    assembly_optimized: String,
 }
 impl Compiler {
     pub fn new() -> Self {
@@ -62,6 +64,7 @@ impl Compiler {
             parser: parser::Parser::new(),
             analyzer: analyzer::Analyzer::new(),
             codegen: codegen::CodeGenerator::new(),
+            optimizer: optimizer::Optimizer::new(),
 
             include_paths: vec![".".to_string()],
             source_code: String::new(),
@@ -69,6 +72,7 @@ impl Compiler {
             tokens: Vec::new(),
             program: parser::Program::new(),
             assembly: String::new(),
+            assembly_optimized: String::new(),
         }
     }
     pub fn parse_args(&mut self) -> Result<(), String> {
@@ -195,6 +199,7 @@ Options:
         let lexer_debug = true;
         let parser_debug = true;
         let codegen_debug = true;
+        let optimize: bool = true;
 
         //read source code from input file
         self.source_code = fs::read_to_string(&self.input_filename)
@@ -228,8 +233,17 @@ Options:
             //code generator
             self.assembly = self.codegen.run(&self.program, codegen_debug)?;
 
+            //optimizer
+            
+            self.assembly_optimized = if optimize {
+                self.optimizer.run(&self.assembly)?
+            }
+            else {
+                self.assembly.clone()
+            };
+
         }
-        fs::write(&format!("{}.asm", self.temp_filename_root), &self.assembly)
+        fs::write(&format!("{}.asm", self.temp_filename_root), &self.assembly_optimized)
         .map_err(|e| format!("velc:IO:write: {}", e))?;
 
         if self.do_assemble {

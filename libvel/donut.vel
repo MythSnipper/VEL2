@@ -1,6 +1,7 @@
 #once
 
 void donut_run() {
+    uint64 frames = 0;
     float64 A = 0.0;
     float64 B = 0.0;
     float64 i;
@@ -17,7 +18,7 @@ void donut_run() {
     print_char(27);
     print("[2J");
 
-    for(;;) {
+    while(frames < 500) {
         memset((void*)b,32,1760);
         memset((void*)z,0,14080);
         for(j=0.0; j < 6.28; j += 0.07) {
@@ -67,6 +68,8 @@ void donut_run() {
             A += 0.00004;
             B += 0.00002;
         }
+
+        frames++;
     }
     return;
 }
